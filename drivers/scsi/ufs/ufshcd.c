@@ -6496,6 +6496,7 @@ static int __ufshcd_issue_tm_cmd(struct ufs_hba *hba,
 
 	task_tag = req->tag;
 	tmf_rqs[req->tag] = req;
+	hba->tmf_rqs[req->tag] = req;
 	treq->req_header.dword_0 |= cpu_to_be32(task_tag);
 
 	memcpy(hba->utmrdl_base_addr + task_tag, treq, sizeof(*treq));
@@ -6535,6 +6536,7 @@ static int __ufshcd_issue_tm_cmd(struct ufs_hba *hba,
 
 	spin_lock_irqsave(hba->host->host_lock, flags);
 	tmf_rqs[req->tag] = NULL;
+	hba->tmf_rqs[req->tag] = NULL;
 	__clear_bit(task_tag, &hba->outstanding_tasks);
 	spin_unlock_irqrestore(hba->host->host_lock, flags);
 
@@ -9382,7 +9384,10 @@ int ufshcd_init(struct ufs_hba *hba, void __iomem *mmio_base, unsigned int irq)
 	}
 	*tmf_rqs = devm_kcalloc(hba->dev, hba->nutmrs, sizeof(**tmf_rqs),
 				GFP_KERNEL);
-	if (!*tmf_rqs) {
+
+	hba->tmf_rqs = devm_kcalloc(hba->dev, hba->nutmrs,
+				    sizeof(*hba->tmf_rqs), GFP_KERNEL);
+	if (!hba->tmf_rqs) {
 		err = -ENOMEM;
 		goto free_tmf_queue;
 	}

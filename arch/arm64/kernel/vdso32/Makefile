@@ -41,6 +41,7 @@ cc32-as-instr = $(call try-run,\
 
 # KBUILD_CPPFLAGS and NOSTDINC_FLAGS from top-level Makefile
 VDSO_CPPFLAGS := -DBUILD_VDSO -D__KERNEL__ -nostdinc -isystem $(shell $(CC_COMPAT) -print-file-name=include)
+VDSO_CPPFLAGS += -isystem $(shell $(CC_COMPAT) -print-file-name=include 2>/dev/null)
 VDSO_CPPFLAGS += $(LINUXINCLUDE)
 
 # Common C and assembly flags
